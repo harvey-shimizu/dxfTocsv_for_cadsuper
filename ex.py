@@ -15,8 +15,8 @@ import datetime
 
 import tqdm as t
 from collections import OrderedDict
-text = 'abcdefgadkbd'
 
+sys.path.append(os.path.join(os.path.dirname(__file__), './mylib'))
 import dxf
 
 import pandas as pd
