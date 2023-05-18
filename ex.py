@@ -22,10 +22,12 @@ import dxf
 import pandas as pd
 pd.set_option('display.unicode.east_asian_width', True)
 import numpy as np
+import csv
 
 # Setting Dxf layers for PartsList and TableLines.
 dxf.xLayerNameForTableLines = '表題、部品表_02'
 dxf.xLayerNameForPartsLists = '表題、部品表_03'
+
 
 if __name__ == "__main__":
 
@@ -33,6 +35,15 @@ if __name__ == "__main__":
     ltmpdf = []
     #for a in args:
     #    print(a)
+
+    # Make the dictionary from CSV file in mylib/r211_e.csv
+    f = open('./mylib/r211_e.csv', 'r',encoding="utf-8_sig")
+    for rows in csv.reader(f):
+        dxf.xDictFromCsv.update({rows[0]:rows[1]})
+        dxf.xDictFromCsv2.update({rows[2]:rows[1]})
+
+    #print(dxf.xDictFromCsv)
+    #print(dxf.xDictFromCsv2)
 
     #exit()
 
@@ -42,7 +53,7 @@ if __name__ == "__main__":
         d = dxf.cDrawing(f)
         d2 = []
         for m, b in enumerate(d.matrix.iblk, 0):
-            d1 = {'file':d.fbase+d.fcode+d.frev}
+            d1 = {'Abrr':d.fabrr, 'File':d.fbase+d.fcode+d.frev}
             for box in b.boxies:
                 #print(box.contents)
                 d1[dxf.xMatrixHeader[box.name]] = ','.join(box.contents)
@@ -63,9 +74,11 @@ if __name__ == "__main__":
     now = datetime.datetime.now(JST)
     t = now.strftime('%Y%m%d%H%M%S')
 
+    # Making output file in the current directory
     outputFileName = t + "_" + 'partsList.xlsx'
     print(os.getcwd() + "\\" + outputFileName)
 
+    # Making a file with the name above, formatting it to Excel.
     with pd.ExcelWriter(outputFileName) as writer:
         df.to_excel(writer, sheet_name='Parts Lists', index=None)
 
