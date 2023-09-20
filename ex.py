@@ -55,7 +55,9 @@ if __name__ == "__main__":
         for m, b in enumerate(d.matrix.iblk, 0):
             d1 = {'Abrr':d.fabrr, 'File':d.fbase+d.fcode+d.frev}
             for box in b.boxies:
-                #print(box.contents)
+                if '' in box.contents:
+                    box.contents = [c for c in box.contents if ''!=c]
+                print(box.name, box.contents)
                 d1[dxf.xMatrixHeader[box.name]] = ','.join(box.contents)
             d2.append(d1)
 

@@ -361,6 +361,7 @@ class cDrawing:
                     tmpdata.append((code, value))
             else:
                 if code == xTargetLayerCode and value == xLayerNameForTableLines:
+                    #print(xTargetLayerCode, value)
                     target_layer = 1
                 tmpdata.append((code, value))
 
@@ -610,9 +611,18 @@ class cBlocks:
         for b in self.iblk:
             for b2 in b.boxies:
                 for txt in itext.texts:
-                    if     b2.leftLimit['x']  < txt.center_x and b2.leftLimit['y']  > txt.center_y \
+                    # print('--------- start -----------')
+                    # print(txt.content)
+                    # print('center x, y: ', txt.center_x, txt.center_y)
+                    # print('X  l.x < c.x < r.x: ', b2.leftLimit['x'],'<',txt.center_x,'<',b2.rightLimit['x'])
+                    # print('Y  l.y > c.y > r.y: ', b2.leftLimit['y'],'>',txt.center_y,'>',b2.rightLimit['y'])
+                    # print('--------- end -----------')
+                    if b2.leftLimit['x']  < txt.center_x and b2.leftLimit['y']  > txt.center_y \
                        and b2.rightLimit['x'] > txt.center_x and b2.rightLimit['y'] < txt.center_y:
-                           b2.set_contents_for_box(txt.content)
+                        # print('*****************************')
+                        # print(txt.content)
+                        # print('*****************************')
+                        b2.set_contents_for_box(txt.content)
                 # Sorted by strings in the list of Descriptions.
                 b2.contents.sort()
         try:
