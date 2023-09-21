@@ -146,12 +146,19 @@ class cDrawing:
     def __init__(self, fname):
         #self.filename = fname.replace('/', os.sep)
         self.filename = fname
+        #print(fname)
+        if not fname.endswith('.DXF'):
+            print('Not support the file format', fname)
+            exit()
+        #print(self.filename)
         self.LIMMAX_x = 0
         self.LIMMAX_y = 0
         #self.fbase, self.fcode, self.frev = self.get_head_sfx_and_num(self.filename)
         self.fabrr, self.fbase, self.fcode, self.frev = self.get_head_sfx_and_num(self.filename)
         self.matrix = self.dxf_analysis(self.readfile(self.filename))
         #self.numOfParts = self.matrix.numOfBlocks
+        # for debug
+        #print(self.numOfParts)
 
     @classmethod
     def get_head_sfx_and_num(cls, filename=""):
@@ -232,10 +239,18 @@ class cDrawing:
 
         #print(data)
         self.dxf_tables_analysis(data[sTABLES])
+        # for debug
+        #print(data[sTABLES])
         self.dxf_layers_analysis(data[sTABLES][sLAYER])
+        # for debug
+        #print(data[sTABLES][sLAYER])
         iblk = self.dxf_blocks_analysis(data[sBLOCKS])
+        # for debug
+        #print(iblk)
         if iblk:
             itxt = self.dxf_entities_analysis(data[sENTITIES])
+            # for debug
+            #print(itxt)
             iblk.matching_text_with_box(itxt)
         else:
             global xErrorCounts
@@ -308,6 +323,10 @@ class cDrawing:
 
         # Header is skkipping for data[2::]
         for num, (code, value) in enumerate(data[2::],2):
+            #for debug at 2023.09.21
+            # Here is the portion where the bug was occured becusae DXF layer name was changed for partsList.
+            # I'm not sure whay its DXF layer name was changed, but it format seems to be subjected to CAD vendor spec.
+            #print(code, value)
             if code == 0:
                 if target_layer == 1 and target_entitiy == 1:
                     result.append(tmpdata)
@@ -316,10 +335,12 @@ class cDrawing:
                 if value == 'TEXT':
                     target_entitiy = 1
             elif (code, value) in [(xTargetLayerCode, xLayerNameForPartsLists)]:
+                #print(xTargetLayerCode, value)
                 target_layer = 1
             tmpdata.append((code, value))
 
         for text in result:
+            # for debug
             #print(text)
             itexts.set_texts(self.initializing_text_param(text))
 
@@ -368,9 +389,12 @@ class cDrawing:
         for block in result:
             # Walus expression supported from Python3.8
             if not (b := self.initializing_block_param(block)) == None:
+                # for debug
                 #print(block)
+                #print(b)
                 iblocks.set_blocks(b)
             else:
+                # for debug
                 #print('Invalid format')
                 pass
 
@@ -592,6 +616,7 @@ class cBlocks:
         if block.vLines:
             # Sorting vertical Lines
             block.vLines.sort(key=attrgetter('start_x'))
+            # for debug
             #print(block.vLines)
 
             # Registration of range of Block
@@ -603,14 +628,31 @@ class cBlocks:
             # Sorting horizontal Lines
             block.hLines.sort(key=attrgetter('start_y'))
 
+            # for debug
+            #print(block.name)
+            #print(block)
+
             for l, n in zip(block.vLines, range(len(block.vLines)-1)):
                 b = cBox('b'+str(n), l.end_x, l.end_y, block.vLines[n+1].start_x, block.vLines[n+1].start_y)
                 block.boxies.append(b)
 
+            # for debug
+            # print(block.leftUpper['x'])
+            # print(block.leftUpper['y'])
+            # print(block.rightLower['x'])
+            # print(block.rightLower['y'])
+
     def matching_text_with_box(self, itext):
         for b in self.iblk:
+            #for debug
+            #print(b)
             for b2 in b.boxies:
+                #for debug
+                # if (b2.contents):
+                #     print(b2.contents)
                 for txt in itext.texts:
+                    #print(txt)
+                    # for debug
                     # print('--------- start -----------')
                     # print(txt.content)
                     # print('center x, y: ', txt.center_x, txt.center_y)
@@ -619,6 +661,7 @@ class cBlocks:
                     # print('--------- end -----------')
                     if b2.leftLimit['x']  < txt.center_x and b2.leftLimit['y']  > txt.center_y \
                        and b2.rightLimit['x'] > txt.center_x and b2.rightLimit['y'] < txt.center_y:
+                        # for debug
                         # print('*****************************')
                         # print(txt.content)
                         # print('*****************************')
@@ -657,9 +700,14 @@ def chkGroupID (line, pattern):
 
 if __name__ == "__main__":
 
+    def readfile(ifile):
+        with open(ifile, "r", encoding="cp932") as f:
+            line = f.readlines()
+        return line
+
     args = sys.argv
-    filename = args.pop(0)
-    raw = readfile(args[0])
+    filename = args[1]
+    raw = readfile(filename)
     d = cDrawing(filename, dxf_analysis(raw))
 
     print(d.numOfLine)

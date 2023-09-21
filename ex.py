@@ -48,6 +48,8 @@ if __name__ == "__main__":
     #exit()
 
     countUp = 0
+    # An array to keep a filename that doesn't have any parts.
+    notAnyParts = [];
     for n, f in enumerate(t.tqdm(args[1:], 0, ncols=100)):
         #print(str(n) + "\t: " + f) //For debug
         d = dxf.cDrawing(f)
@@ -57,9 +59,13 @@ if __name__ == "__main__":
             for box in b.boxies:
                 if '' in box.contents:
                     box.contents = [c for c in box.contents if ''!=c]
-                print(box.name, box.contents)
+                #for debug
+                #print(box.name, box.contents)
                 d1[dxf.xMatrixHeader[box.name]] = ','.join(box.contents)
             d2.append(d1)
+        if not d2:
+            notAnyParts.append(f)
+            #print("It doesn't have any parts!: ", f)
 
         ltmpdf.append(pd.DataFrame.from_dict(d2))
         countUp += 1
@@ -89,3 +95,7 @@ if __name__ == "__main__":
     else:
         print("Errors have happened in some files.(" + str(dxf.xErrorCounts) + ")")
 
+    print("Here are files that don't have any parts.")
+    for f in notAnyParts:
+        print(f)
+    print("**** Please check if they are correct! ****")
